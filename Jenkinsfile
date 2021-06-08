@@ -1,5 +1,5 @@
 pipeline {
-   agent any 
+   agent none 
 
    tools {
        maven 'MAVEN3'
@@ -8,6 +8,7 @@ pipeline {
 
     stages {
         stage('Compile et tests') {
+            agent any 
             steps {
                 echo 'Unit test et packaging'
                 sh 'mvn -Dmaven.test.failure.ignore=true clean package'
@@ -27,14 +28,24 @@ pipeline {
         stage('Analyse qualité et test intégration') {
             parallel {
                 stage('Tests d integration') {
+                    agent any
                     steps {
                         echo 'Tests d integration'
+                        sh 'mvn -Dmaven.test.failure.ignore=true clean integration-test'
                     }
                     
                 }
                  stage('Analyse Sonar') {
+                     agent any
                      steps {
                         echo 'Analyse sonar'
+                        sh 'mvn -Dmaven.test.failure.ignore=true clean test'
+                        script {
+                            def scannerHome = tool 'SONAR_SCANNER4';
+                            withSonarQubeEnv('SONAR_DOCKER') { // If you have configured more than one global server connection, you can specify its name
+                                sh "${scannerHome}/bin/sonar-scanner -Dproject.settings=sonar.properties"
+                            }
+                        }
                      }
                     
                 }
@@ -43,6 +54,7 @@ pipeline {
         }
             
         stage('Déploiement intégration') {
+            agent any
 
             steps {
                 echo "Déploiement intégration"
