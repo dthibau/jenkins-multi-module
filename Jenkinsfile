@@ -7,7 +7,7 @@ pipeline {
         stage('Compile et tests') {
             agent {
                 docker {
-                    image 'maven:3-alpine'
+                    image 'maven:3.8.3-jdk-11'
                     args '-v $HOME/.m2:/root/.m2'
                 }
             } 
@@ -35,7 +35,7 @@ pipeline {
                 stage('Tests d integration') {
                     agent {
                 docker {
-                    image 'maven:3-alpine'
+                    image 'maven:3.8.3-jdk-11'
                     args '-v $HOME/.m2:/root/.m2'
                 }
             } 
@@ -48,7 +48,7 @@ pipeline {
                  stage('Analyse Sonar') {
                      agent {
                 docker {
-                    image 'maven:3-alpine'
+                    image 'maven:3.8.3-jdk-11'
                     args '-v $HOME/.m2:/root/.m2'
                 }
             } 
