@@ -54,13 +54,7 @@ pipeline {
             } 
                      steps {
                         echo 'Analyse sonar'
-                        sh 'mvn -Dmaven.test.failure.ignore=true clean test'
-                        script {
-                            def scannerHome = tool 'SONAR_SCANNER4';
-                            withSonarQubeEnv('SONAR_DOCKER') { // If you have configured more than one global server connection, you can specify its name
-                                sh "${scannerHome}/bin/sonar-scanner -Dproject.settings=sonar.properties"
-                            }
-                        }
+                        sh 'mvn -Dmaven.test.failure.ignore=true clean verify sonar:sonar'
                      }
                     
                 }
