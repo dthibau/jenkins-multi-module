@@ -33,11 +33,12 @@ pipeline {
         stage('Analyse qualité et test intégration') {
             parallel {
                 stage('Tests d integration') {
-                    agent any
-                    tools {
-                        maven 'MAVEN3'
-                        jdk 'JDK8'
-                    }
+                    agent {
+                docker {
+                    image 'maven:3-alpine'
+                    args '-v $HOME/.m2:/root/.m2'
+                }
+            } 
                     steps {
                         echo 'Tests d integration'
                         sh 'mvn -Dmaven.test.failure.ignore=true clean integration-test'
@@ -45,11 +46,12 @@ pipeline {
                     
                 }
                  stage('Analyse Sonar') {
-                     agent any
-                     tools {
-                        maven 'MAVEN3'
-                        jdk 'JDK8'
-                    }
+                     agent {
+                docker {
+                    image 'maven:3-alpine'
+                    args '-v $HOME/.m2:/root/.m2'
+                }
+            } 
                      steps {
                         echo 'Analyse sonar'
                         sh 'mvn -Dmaven.test.failure.ignore=true clean test'
@@ -81,10 +83,6 @@ pipeline {
 
         stage('Déploiement intégration') {
             agent any
-            tools {
-                maven 'MAVEN3'
-                jdk 'JDK8'
-            }
             input {
                 message 'Vers quel data-center voulez vous déployer ?'
                 ok 'Déployer'
