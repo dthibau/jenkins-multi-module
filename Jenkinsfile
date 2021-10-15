@@ -1,16 +1,14 @@
 pipeline {
    agent none 
 
-   
-
     stages {
         stage('Compile et tests') {
+
             agent {
-                docker {
-                    image 'maven:3.8.3-jdk-11'
-                    args '-v $HOME/.m2:/root/.m2'
+                kubernetes {
+                    yamlFile 'kubernetesPod.yml'
                 }
-            } 
+            }
             steps {
                 echo 'Unit test et packaging'
                 sh 'mvn -Dmaven.test.failure.ignore=true clean package'
@@ -46,15 +44,10 @@ pipeline {
                     
                 }
                  stage('Analyse Sonar') {
-                     agent {
-                docker {
-                    image 'maven:3.8.3-jdk-11'
-                    args '-v $HOME/.m2:/root/.m2'
-                }
-            } 
+                     agent any
                      steps {
                         echo 'Analyse sonar'
-                        sh 'mvn -Dmaven.test.failure.ignore=true clean verify sonar:sonar'
+                        sh 'mvn -Dmaven.test.failure.ignore=true clean verify'
                      }
                     
                 }
