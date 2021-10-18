@@ -11,7 +11,7 @@ pipeline {
             }
             steps {
                 echo 'Unit test et packaging'
-                sh 'mvn -Dmaven.test.failure.ignore=true clean package'
+                sh './mvnw -Dmaven.test.failure.ignore=true clean package'
                 dir('application/target') {
                     stash includes: '*.jar', name: 'app'
                 }
@@ -38,7 +38,7 @@ pipeline {
             }
                     steps {
                         echo 'Tests d integration'
-                        sh 'mvn -Dmaven.test.failure.ignore=true clean integration-test'
+                        sh './mvnw -Dmaven.test.failure.ignore=true clean integration-test'
                     }
                     
                 }
@@ -46,7 +46,7 @@ pipeline {
                      agent any
                      steps {
                         echo 'Analyse sonar'
-                        sh 'mvn -Dmaven.test.failure.ignore=true clean verify'
+                        sh './mvnw -Dmaven.test.failure.ignore=true clean verify'
                      }
                     
                 }

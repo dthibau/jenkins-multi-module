@@ -6,8 +6,8 @@ metadata:
     some-label: some-label-value
 spec:
   containers:
-    - name: maven
-      image: maven:3.8.3-jdk-11
+    - name: jdk
+      image: openjdk:11
       command:
       - cat
       tty: true
