@@ -31,12 +31,11 @@ pipeline {
         stage('Analyse qualité et test intégration') {
             parallel {
                 stage('Tests d integration') {
-                    agent {
-                docker {
-                    image 'maven:3.8.3-jdk-11'
-                    args '-v $HOME/.m2:/root/.m2'
+            agent {
+                kubernetes {
+                    yamlFile 'kubernetesPod.yml'
                 }
-            } 
+            }
                     steps {
                         echo 'Tests d integration'
                         sh 'mvn -Dmaven.test.failure.ignore=true clean integration-test'
