@@ -1,6 +1,12 @@
+def integrationUrl
+def dataCenters
+
 pipeline {
    agent none 
-
+    environment {
+        DATACENTER =''
+    }
+  
     tools {
         jdk 'JDK17'
     }
@@ -47,26 +53,51 @@ pipeline {
             }
             
         }
-            
-        stage('Déploiement DATACENTER') {
-            agent none
-            input {
-                message 'Vers quel data center voulez vous déployer ?'
-                ok 'Déployer'
-                parameters {
-                    choice choices: ['PARIS', 'NANCY', 'STRASBOURG'], name: 'DATACENTER'
-                }
-            }
+        stage('Read Deployment Info') {
+            agent any
 
             steps {
-                echo "Déploiement intégration vers $DATACENTER"
+                echo "Read Deployment Info"
+                script {
+                    def jsonData = readJSON file: './deployment.json'
+                    echo "jsonData ${jsonData}"
+                    integrationUrl = jsonData.integrationURL
+                    dataCenters = jsonData.dataCenters
+                    echo "integration ${integrationUrl}"
+                    echo "dataCenters ${dataCenters}"
+                }
+                
+            }
+        }
+
+        stage('Déploiement vers DATACENTER') {
+            agent none
+
+            steps {
+                input message: "Voulez vous déployer vers $dataCenters", ok: 'Déployer'
+               echo "Deploying ..."
+            }
+        }
+
+        stage('Déploiement intégration') {
+            agent any
+          
+            steps {
                 unstash 'app'
-                sh "cp *.jar /home/dthibau/Formations/Jenkins/MyWork/Serveurs/${DATACENTER}.jar"
+                script {
+                    for (dataCenter in dataCenters) {
+                        sh "cp *.jar ${integrationUrl}/${dataCenter}.jar"
+                    }
+                }
             }
         }
        
-
      }
     
 }
+
+
+
+
+
 
