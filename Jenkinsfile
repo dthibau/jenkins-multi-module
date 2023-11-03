@@ -1,3 +1,6 @@
+@Library('DavidLib@dev') _
+
+
 def integrationUrl
 def dataCenters
 
@@ -52,6 +55,19 @@ pipeline {
                 }
             }
             
+        }
+        stage ('Release') {
+            agent any
+
+            steps {
+                createTarGz(
+                    sourceDir: 'library/src/main/java',
+                    extensions: ['java'],
+                    outputDir: '.',
+                    outputFile: 'lib-src-dist'
+                )
+                sh "cp lib-src-dist.tar.gz /home/dthibau/Formations/Jenkins/MyWork"
+            }
         }
         stage('Read Deployment Info') {
             agent any
