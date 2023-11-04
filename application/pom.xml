@@ -13,19 +13,6 @@
         <relativePath >..</relativePath>
     </parent>
     <build>
-        <resources>
-            <resource>
-                <directory>${basedir}/src/main/resources</directory>
-            </resource>
-            <resource>
-                <directory>${basedir}/src/main/docker</directory>
-                <includes>
-                    <include>**/Dockerfile</include>
-                    <include>**/*.yml</include>
-                    <include>**/*.yaml</include>
-                </includes>
-            </resource>
-        </resources>
         <plugins>
             <plugin>
                 <groupId>org.springframework.boot</groupId>

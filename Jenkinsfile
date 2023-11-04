@@ -10,15 +10,21 @@ pipeline {
   
     stages {
         stage('Compile et tests') {
-            
+            // jdk17-agent a été configuré par l'adminisrateur
+            // Il hérite de défaut et ajoute un container openjdk:17-alpine
             agent {
                 kubernetes {
-                    yamlFile 'kubernetesPod.yml'
+                    inheritFrom 'jdk17-agent'
                 }
             }
             steps {
-                echo 'Unit test et packaging'
-                sh './mvnw -Dmaven.test.failure.ignore=true clean package'
+                container(name: 'openjdk-17') {
+                  echo 'Unit test et packaging'
+                  sh 'env | grep JAVA'
+                  sh 'javac -version'
+                  sh './mvnw -Dmaven.test.failure.ignore=true clean package'
+                }
+                
             }
             post {
                 always {
@@ -44,17 +50,19 @@ pipeline {
                         }
                     }
                     steps {
-                        echo 'Tests de vulnérabilités'
-                        sh './mvnw -DskipTests verify'
+                        container(name: 'jdk') {
+                            echo 'Tests de vulnérabilités'
+                            sh 'ls -al /root/.m2'
+                            sh './mvnw -DskipTests -Dmaven.repo.local=/root/.m2/repository verify'
+                            sh 'ls -al /root/.m2'
+
+                        }
+                        
                     }
                     
                 }
                  stage('Analyse Sonar') {
-                    agent {
-                        kubernetes {
-                            yamlFile 'kubernetesPod.yml'
-                        }
-                    }
+                    agent none
                      steps {
                         echo 'Analyse sonar'
                     //    sh './mvnw -Dmaven.test.failure.ignore=true clean integration-test sonar:sonar'
@@ -65,15 +73,21 @@ pipeline {
             
         }
         stage('Push to DockerHub') {
-            agent any
-            steps {
-                unstash 'app'
-                script {
-                    def dockerImage = docker.build('dthibau/multi-module', '.')
-                    docker.withRegistry('https://registry.hub.docker.com', 'dthibau_docker') {
-                        dockerImage.push "$BRANCH_NAME"
-                    }
+            agent {
+                kubernetes {
+                    yamlFile 'kubernetesPod.yml'
                 }
+            }
+            steps {
+                container(name: 'dind') {
+                    unstash 'app'
+                    script {
+                        def dockerImage = docker.build('dthibau/multi-module', '.')
+                        docker.withRegistry('https://registry.hub.docker.com', 'dthibau_docker') {
+                            dockerImage.push "$BRANCH_NAME"
+                        }
+                    }
+                }                
             }
         }    
         stage ('Release') {
@@ -86,8 +100,13 @@ pipeline {
                     outputDir: '.',
                     outputFile: 'lib-src-dist'
                 )
-                sh "cp lib-src-dist.tar.gz /home/dthibau/Formations/Jenkins/MyWork"
             }
+            post {
+                success {
+                    archiveArtifacts artifacts: 'lib-src-dist.tar.gz', followSymlinks: false
+                }
+            }
+
         }
         stage('Read Deployment Info') {
             agent any
@@ -122,7 +141,8 @@ pipeline {
                 unstash 'app'
                 script {
                     for (dataCenter in dataCenters) {
-                        sh "cp *.jar ${integrationUrl}/${dataCenter}.jar"
+                        sh "mv *.jar ${dataCenter}.jar"
+                        archiveArtifacts artifacts: "$dateCenter.jar", followSymlinks: false
                     }
                 }
             }

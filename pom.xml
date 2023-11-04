@@ -25,7 +25,6 @@
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <java.version>17</java.version>
-        <sonar.login>sqa_a304c3c2f92a86939098c25ddab75836a8b4a5f4</sonar.login>
         <jacoco-maven-plugin.version>0.8.7</jacoco-maven-plugin.version>
         <project.testresult.directory>${project.build.directory}/test-results</project.testresult.directory>
     </properties>
