@@ -6,16 +6,16 @@ def dataCenters
 
 pipeline {
    agent none 
-    environment {
-        DATACENTER =''
-    }
+
   
-    tools {
-        jdk 'JDK17'
-    }
     stages {
         stage('Compile et tests') {
-            agent any 
+            agent {
+                docker {
+                    image 'openjdk:17-alpine'
+                    args '-v $HOME/.m2:/root/.m2'
+                } 
+            }
             steps {
                 echo 'Unit test et packaging'
                 sh './mvnw -Dmaven.test.failure.ignore=true clean package'
@@ -39,6 +39,9 @@ pipeline {
             parallel {
                 stage('Vulnérabilités') {
                     agent any 
+                    tools {
+                        jdk 'JDK17'
+                    }
                     steps {
                         echo 'Tests de vulnérabilités'
                         sh './mvnw -DskipTests verify'
@@ -47,6 +50,9 @@ pipeline {
                 }
                  stage('Analyse Sonar') {
                      agent any
+                     tools {
+                        jdk 'JDK17'
+                     }
                      steps {
                         echo 'Analyse sonar'
                         sh './mvnw -Dmaven.test.failure.ignore=true clean integration-test sonar:sonar'
