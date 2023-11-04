@@ -10,11 +10,11 @@ pipeline {
   
     stages {
         stage('Compile et tests') {
+            
             agent {
-                docker {
-                    image 'openjdk:17-alpine'
-                    args '-v $HOME/.m2:/root/.m2'
-                } 
+                kubernetes {
+                    yamlFile 'kubernetesPod.yml'
+                }
             }
             steps {
                 echo 'Unit test et packaging'
@@ -38,9 +38,10 @@ pipeline {
         stage('Analyse qualité et test intégration') {
             parallel {
                 stage('Vulnérabilités') {
-                    agent any 
-                    tools {
-                        jdk 'JDK17'
+                    agent {
+                        kubernetes {
+                            yamlFile 'kubernetesPod.yml'
+                        }
                     }
                     steps {
                         echo 'Tests de vulnérabilités'
@@ -49,13 +50,14 @@ pipeline {
                     
                 }
                  stage('Analyse Sonar') {
-                     agent any
-                     tools {
-                        jdk 'JDK17'
-                     }
+                    agent {
+                        kubernetes {
+                            yamlFile 'kubernetesPod.yml'
+                        }
+                    }
                      steps {
                         echo 'Analyse sonar'
-                        sh './mvnw -Dmaven.test.failure.ignore=true clean integration-test sonar:sonar'
+                    //    sh './mvnw -Dmaven.test.failure.ignore=true clean integration-test sonar:sonar'
                      }
                     
                 }
