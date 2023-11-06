@@ -9,6 +9,18 @@ pipeline {
 
   
     stages {
+        stage('Check Ansible') {
+            agent {
+                kubernetes {
+                    inheritFrom 'jdk17-agent'
+                }
+            }
+            steps {
+                container(name: 'ansible') {
+                    sh 'ansible --version'
+                }
+            }
+        }
         stage('Compile et tests') {
             // jdk17-agent a été configuré par l'adminisrateur
             // Il hérite de défaut et ajoute un container openjdk:17-alpine
