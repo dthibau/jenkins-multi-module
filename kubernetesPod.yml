@@ -17,6 +17,9 @@ spec:
           mountPath: /root/.m2
     - name: ansible
       image: alpine/ansible
+      command:
+      - cat
+      tty: true
     - name: dind
       image: docker:dind  # Utilisation de l'image Docker-in-Docker
       securityContext:
