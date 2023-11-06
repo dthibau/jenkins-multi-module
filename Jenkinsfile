@@ -12,7 +12,7 @@ pipeline {
         stage('Check Ansible') {
             agent {
                 kubernetes {
-                    inheritFrom 'jdk17-agent'
+                    yamlFile 'kubernetesPod.yml'
                 }
             }
             steps {
