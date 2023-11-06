@@ -16,7 +16,7 @@ spec:
         - name: maven-repo
           mountPath: /root/.m2
     - name: ansible
-      image: ansible/ansible
+      image: alpine/ansible
     - name: dind
       image: docker:dind  # Utilisation de l'image Docker-in-Docker
       securityContext:
