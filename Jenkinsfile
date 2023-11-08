@@ -26,11 +26,13 @@ pipeline {
             // Il hérite de défaut et ajoute un container openjdk:17-alpine
             agent {
                 kubernetes {
-                    inheritFrom 'jdk17-agent'
+//                    inheritFrom 'jdk17-agent'
+                    yamlFile 'kubernetesPod.yml'
                 }
             }
             steps {
-                container(name: 'openjdk-17') {
+                // container(name: 'openjdk-17') {
+                container(name: 'jdk') {
                   echo 'Unit test et packaging'
                   sh 'env | grep JAVA'
                   sh 'javac -version'
