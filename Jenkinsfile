@@ -1,21 +1,16 @@
-def integrationUrl
-def dataCenters
-
 pipeline {
    agent none 
-    environment {
-        DATACENTER =''
-    }
-  
     tools {
         jdk 'JDK17'
     }
     stages {
         stage('Compile et tests') {
-            agent any 
+            agent {
+                label 'jdk'
+            }
             steps {
                 echo 'Unit test et packaging'
-                sh './mvnw -Dmaven.test.failure.ignore=true clean package'
+                sh './mvnw -Dmaven.test.failure.ignore=true -Pprod clean package'
             }
             post {
                 always {
@@ -24,7 +19,7 @@ pipeline {
                 success {
                     archiveArtifacts artifacts: '**/target/*.jar', followSymlinks: false
                     dir('application/target') {
-                        stash includes: '*.jar', name: 'app'
+                        stash name: 'jar', includes: '**/*.jar'
                     }
                 }
                 failure {
@@ -32,72 +27,82 @@ pipeline {
                 }
             }
         }
-        stage('Analyse qualité et test intégration') {
+        
+        stage('Analyse qualité et vulnérabilités') {
             parallel {
                 stage('Vulnérabilités') {
-                    agent any 
+                    agent any
                     steps {
-                        echo 'Tests de vulnérabilités'
+                        echo 'Tests de Vulnérabilités OWASP'
                         sh './mvnw -DskipTests verify'
+                        publishHTML([allowMissing: false, alwaysLinkToLastBuild: false, keepAll: false, reportDir: 'target/', reportFiles: 'dependency-check-report.html', reportName: 'Dependency Check', reportTitles: '', useWrapperFileDirectly: true])
                     }
                     
                 }
                  stage('Analyse Sonar') {
-                     agent any
+                    agent any
+                    environment {
+                        SONAR_TOKEN = credentials('SONAR_TOKEN') // Récupère le token Sonar depuis les credentials
+                    }
                      steps {
                         echo 'Analyse sonar'
-                        sh './mvnw -Dmaven.test.failure.ignore=true clean integration-test sonar:sonar'
+                        withCredentials([string(credentialsId: 'SONAR_TOKEN', variable: 'SONAR_TOKEN')]) {
+                          sh './mvnw -Dsonar.token=${SONAR_TOKEN} integration-test sonar:sonar'
+                        }
                      }
-                    
                 }
             }
             
-        }
-        stage('Read Deployment Info') {
-            agent any
+        } 
+            
+        stage('Validation packaging') {
+            when {
+                branch 'main'
 
+                beforeOptions true
+                beforeInput true
+                beforeAgent true
+            } 
+
+            agent none
+            options {
+                timeout(15)
+            }
+            input {
+                message 'Vers quel datacenter voulez-vous déployer ?'
+                ok 'Déployer'
+                parameters {
+                    choice choices: ['Paris', 'Lille', 'Lyon'], name: 'DATACENTER'
+                }
+            }
             steps {
-                echo "Read Deployment Info"
+                echo "Déploiement intégration $DATACENTER"
                 script {
-                    def jsonData = readJSON file: './deployment.json'
-                    echo "jsonData ${jsonData}"
-                    integrationUrl = jsonData.integrationURL
-                    dataCenters = jsonData.dataCenters
-                    echo "integration ${integrationUrl}"
-                    echo "dataCenters ${dataCenters}"
+                    selectedDataCenter = "${DATACENTER}"
                 }
                 
             }
         }
+       stage('Déploiement vers datacenters') {
+        when {
+            branch 'main'
 
-        stage('Déploiement vers DATACENTER') {
-            agent none
-
-            steps {
-                input message: "Voulez vous déployer vers $dataCenters", ok: 'Déployer'
-               echo "Deploying ..."
-            }
-        }
-
-        stage('Déploiement intégration') {
-            agent any
-          
-            steps {
-                unstash 'app'
-                script {
-                    for (dataCenter in dataCenters) {
-                        sh "cp *.jar ${integrationUrl}/${dataCenter}.jar"
-                    }
+            beforeInput true
+        } 
+        agent any 
+        steps {
+            echo "Déploiement vers $selectedDataCenter"
+            unstash 'jar'
+            script {
+                def conf = readJSON file: 'deployment.json'
+                def integrationUrl = conf['integrationURL']
+                def dataCenters = conf['dataCenters']
+                for (dataCenter in dataCenters) {
+                    sh "cp *.jar ${integrationUrl}/${dataCenter}.jar"
                 }
             }
         }
-       
-     }
-    
+       }
+     } 
 }
-
-
-
-
-
 
