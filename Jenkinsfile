@@ -1,3 +1,4 @@
+
 pipeline {
    agent none 
     tools {
@@ -48,7 +49,11 @@ pipeline {
                         echo 'Analyse sonar'
                         withCredentials([string(credentialsId: 'SONAR_TOKEN', variable: 'SONAR_TOKEN')]) {
                           sh './mvnw -Dsonar.token=${SONAR_TOKEN} integration-test sonar:sonar'
+                          script {
+                            checkSonarQualityGate()
+                          }
                         }
+                        
                      }
                 }
             }
@@ -86,7 +91,6 @@ pipeline {
        stage('Déploiement vers datacenters') {
         when {
             branch 'main'
-
             beforeInput true
         } 
         agent any 
@@ -106,3 +110,41 @@ pipeline {
      } 
 }
 
+def checkSonarQualityGate(){
+    // Get properties from report file to call SonarQube 
+    def sonarReportProps = readProperties  file: 'target/sonar/report-task.txt'
+    def sonarServerUrl = sonarReportProps['serverUrl']
+    def ceTaskUrl = sonarReportProps['ceTaskUrl']
+    def ceTask
+
+    // Get task informations to get the status
+    timeout(time: 4, unit: 'MINUTES') {
+        waitUntil(initialRecurrencePeriod: 1000)  {
+            withCredentials ([string(credentialsId: 'SONAR_TOKEN', variable : 'token')]) {
+                def response = sh(script: "curl -u ${token}: ${ceTaskUrl}", returnStdout: true).trim()
+                ceTask = readJSON text: response
+            }
+
+            echo ceTask.toString()
+              return "SUCCESS".equals(ceTask['task']['status'])
+        }
+    }
+
+    // Get project analysis informations to check the status
+    def ceTaskAnalysisId = ceTask['task']['analysisId']
+    def qualitygate
+
+    withCredentials ([string(credentialsId: 'SONAR_TOKEN', variable : 'token')]) {
+        def response = sh(script: "curl -u ${token}: ${sonarServerUrl}/api/qualitygates/project_status?analysisId=${ceTaskAnalysisId}", returnStdout: true).trim()
+        qualitygate =  readJSON text: response
+    }
+
+    echo qualitygate.toString()
+    if ("ERROR".equals(qualitygate['projectStatus']['status'])) {
+        error "Quality Gate failure"
+    }
+}
+
+
+
+it 
