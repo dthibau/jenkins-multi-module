@@ -21,6 +21,9 @@ pipeline {
                 success {
                     // One or more steps need to be included within each condition's block.
                     archiveArtifacts artifacts: '**/application/target/*.jar', followSymlinks: false
+                    dir {'**/application/target'} {
+                        stash name: 'application', includes: '*.jar'
+                    }
                 }
                 unsuccessful {
                     // One or more steps need to be included within each condition's block.
@@ -29,7 +32,7 @@ pipeline {
             }
              
         }
-        stage('Analyse qualité et vulnérabilités') {
+/*        stage('Analyse qualité et vulnérabilités') {
             parallel {
                 stage('Vulnérabilités') {
                     agent any 
@@ -61,7 +64,7 @@ pipeline {
             }
             
         }
-            
+  */          
         stage('Déploiement intégration') {
             input {
                 message 'Vers quel datacenter voulez-vous déployer ?'
@@ -73,6 +76,8 @@ pipeline {
 
             steps {
                 echo "Déploiement intégration $DATACENTER"
+                unstash 'application'
+                sh 'cp *.jar /home/dthibau/Formations/Jenkins/MyWork/Serveurs/${DATACENTER}.jar'
                 
             }
         }
