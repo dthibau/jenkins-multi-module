@@ -63,9 +63,16 @@ pipeline {
         }
             
         stage('Déploiement intégration') {
+            input {
+                message 'Vers quel datacenter voulez-vous déployer ?'
+                ok 'Déployer'
+                parameters {
+                    choice choices: ['Paris', 'Lille', 'Lyon'], name: 'DATACENTER'
+                }
+            }
 
             steps {
-                echo "Déploiement intégration"
+                echo "Déploiement intégration $DATACENTER"
                 
             }
         }
