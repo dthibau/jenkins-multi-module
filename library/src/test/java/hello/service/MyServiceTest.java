@@ -16,7 +16,7 @@ public class MyServiceTest {
 
     @Test
     public void contextLoads() {
-        assertThat(myService.message()).isNull();
+        assertThat(myService.message()).isNotNull();
     }
 
     @SpringBootApplication
