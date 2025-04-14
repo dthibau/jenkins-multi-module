@@ -33,6 +33,9 @@ pipeline {
                 stage('Vulnérabilités') {
                     steps {
                         echo 'Tests de Vulnérabilités OWASP'
+                        withCredentials([string(credentialsId: 'NVD_API_KEY', variable: 'NVD_API_KEY')]) {
+                            sh 'mvn verify -Dnvd.api.key=$NVD_API_KEY'
+                        }
                     }
                     
                 }
