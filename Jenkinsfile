@@ -4,6 +4,14 @@ pipeline {
     tools {
         maven 'MAVEN3'
     }
+    options {
+        buildDiscarder logRotator(artifactDaysToKeepStr: '', artifactNumToKeepStr: '', daysToKeepStr: '', numToKeepStr: '10')
+        timeout(time: 1, unit: 'HOURS')
+    }
+    triggers {
+        pollSCM 'H/2 * * * *'
+    }
+
 
 
     stages {
@@ -66,6 +74,7 @@ pipeline {
         }
   */          
         stage('Déploiement intégration') {
+            agent any
             input {
                 message 'Vers quel datacenter voulez-vous déployer ?'
                 ok 'Déployer'
