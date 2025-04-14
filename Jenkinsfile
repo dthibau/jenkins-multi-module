@@ -39,6 +39,12 @@ pipeline {
                             sh 'mvn verify -Dnvd.api.key=$NVD_API_KEY -DskipTests'
                         }
                     }
+                    post {
+                        success {
+                            // One or more steps need to be included within each condition's block.
+                            publishHTML([allowMissing: false, alwaysLinkToLastBuild: false, icon: '', keepAll: false, reportDir: 'application/target', reportFiles: 'dependency-check-report.html', reportName: 'Analyse de dépendances OWASP', reportTitles: '', useWrapperFileDirectly: true])                        
+                        }
+                    }
                     
                 }
                  stage('Analyse Sonar') {
