@@ -23,7 +23,7 @@ pipeline {
                 }
                 unsuccessful {
                     // One or more steps need to be included within each condition's block.
-                    mail bcc: '', body: 'Pipeline en erreur', cc: '', from: '', replyTo: '', subject: 'Error !', to: 'david.thibau@gmail.com'
+                    mail bcc: '', body: 'Pipeline en erreur', cc: '', from: 'jenkins@plbformation.com', replyTo: '', subject: 'Error !', to: 'david.thibau@gmail.com'
                 }
             }
              
