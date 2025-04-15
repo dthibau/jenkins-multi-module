@@ -5,9 +5,7 @@ def integrationURL = ''
 pipeline {
    agent none
 
-    tools {
-        maven 'MAVEN3'
-    }
+
     options {
         buildDiscarder logRotator(artifactDaysToKeepStr: '', artifactNumToKeepStr: '', daysToKeepStr: '', numToKeepStr: '10')
         timeout(time: 1, unit: 'HOURS')
@@ -20,10 +18,16 @@ pipeline {
 
     stages {
         stage('Compile et tests') {
-            agent any
+            agent {
+                docker {
+                args '-v $HOME/.m2:/root/.m2'
+                image 'openjdk:17-alpine'
+                }
+            }
+
             steps {
                 echo 'Unit test et packaging'
-                sh 'mvn -Dmaven.test.failure.ignore=true clean package'
+                sh './mvnw -Dmaven.test.failure.ignore=true clean package'
             } 
             post {
                 always {
@@ -48,6 +52,9 @@ pipeline {
             parallel {
                 stage('Vulnérabilités') {
                     agent any 
+                    tools {
+                        maven 'MAVEN3'
+                    }
                     steps {
                         echo 'Tests de Vulnérabilités OWASP'
                         withCredentials([string(credentialsId: 'NVD_API_KEY', variable: 'NVD_API_KEY')]) {
@@ -64,6 +71,9 @@ pipeline {
                 }
                  stage('Analyse Sonar') {
                     agent any 
+                    tools {
+                        maven 'MAVEN3'
+                    }
                     environment {
                         SONAR_TOKEN = credentials('SONAR_TOKEN')
                     }
