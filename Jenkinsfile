@@ -3,7 +3,6 @@ pipeline {
    agent none
 
     tools {
-        println "Jenkinsfile : Current object is tools : ${this}"
         maven 'MAVEN3'
     }
     options {
