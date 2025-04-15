@@ -92,7 +92,7 @@ pipeline {
         stage('Push to Dockerhub') {
             agent any
             steps {
-                cleanWs()
+                
                 unstash 'application'
                 script {
                     def dockerImage = docker.build("dthibau/multi-module", ".")
@@ -100,8 +100,8 @@ pipeline {
                         dockerImage.push ${env.BRANCH_NAME}
                     }
                 }
+                cleanWs()
             }
-
         }
 
         stage('Reading configuration') {
