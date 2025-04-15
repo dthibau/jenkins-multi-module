@@ -81,7 +81,7 @@ pipeline {
                 ok 'Déployer'
             }
             steps {
-                echo "Déploiement intégration $DATACENTER"
+                echo "Déploiement intégration"
                 unstash 'application'
                 script {
                     def props = readJson file: 'deployment.json'
