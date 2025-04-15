@@ -25,7 +25,7 @@ pipeline {
             steps {
                 echo 'Unit test et packaging'
                 sh 'mvn -Dmaven.test.failure.ignore=true clean package'
-                createTarGz(sourceDir: 'application/src/main/java', extensions: ['java'], outputDir: 'dist', outputFile: 'application.sources.tar.gz')
+                createTarGz(sourceDir: 'application/src/main/java', extensions: ['java'], outputDir: 'dist', outputFile: 'application.sources')
             } 
             post {
                 always {
@@ -35,6 +35,7 @@ pipeline {
                 success {
                     // One or more steps need to be included within each condition's block.
                     archiveArtifacts artifacts: '**/application/target/*.jar', followSymlinks: false
+                    archiveArtifacts artifacts: 'dist/*.*', followSymlinks: false
                     dir ('application/target') {
                         stash name: 'application', includes: '*.jar'
                     }
