@@ -50,6 +50,9 @@ pipeline {
         }
         stage('Déploiement vers Artifactory') {
             agent any
+             environment {
+                        ARTIFACTORY = credentials('ARTIFACTORY_USER')
+            }
             steps {
                 echo 'Déploiement vers Artifactory'
                 sh './mvnw -s settings.xml deploy -DskipTests'
