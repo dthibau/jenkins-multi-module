@@ -56,7 +56,7 @@ pipeline {
             steps {
                 echo 'Déploiement vers Artifactory'
                 sh 'env'
-                sh './mvnw -s settings.xml -Dartifactory.user=admin -Dartifactory.password=Admin123 deploy -DskipTests'
+                sh './mvnw -s settings.xml -Dartifactory.user=$ARTIFACTORY_USR -Dartifactory.password=$ARTIFACTORY_PSW deploy -DskipTests'
             }
         }
         stage('Analyse qualité et vulnérabilités') {
