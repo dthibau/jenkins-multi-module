@@ -97,7 +97,7 @@ pipeline {
                 script {
                     def dockerImage = docker.build("dthibau/multi-module", ".")
                     docker.withRegistry('https://registry.hub.docker.com', 'dthibau_docker') {
-                        dockerImage.push ${env.BRANCH_NAME}
+                        dockerImage.push "${env.BRANCH_NAME}"
                     }
                 }
                 cleanWs()
