@@ -48,6 +48,13 @@ pipeline {
             }
              
         }
+        stage('Déploiement vers Artifactory') {
+            agent any
+            steps {
+                echo 'Déploiement vers Artifactory'
+                sh './mvnw -s settings.xml deploy -DskipTests'
+            }
+        }
         stage('Analyse qualité et vulnérabilités') {
             parallel {
                 stage('Vulnérabilités') {

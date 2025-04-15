@@ -80,12 +80,12 @@
     </build>
     <distributionManagement>
         <snapshotRepository>
-            <id>nexus-snapshots</id>
-            <url>http://localhost:8081/repository/maven-snapshots/</url>
+            <id>artifactory-snapshots</id>
+            <url>http://localhost:8083/artifactory/libs-snapshot-local</url>
         </snapshotRepository>
         <repository>
-            <id>nexus-releases</id>
-            <url>http://localhost:8081/repository/maven-releases/</url>
+            <id>artifactory-releases</id>
+            <url>http://localhost:8083/artifactory/libs-release-local</url>
         </repository>
     </distributionManagement>
 
